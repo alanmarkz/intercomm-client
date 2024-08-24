@@ -1,25 +1,5 @@
-import { auth } from "@/auth";
-import axios from "axios";
-import { getToken } from "next-auth/jwt";
-
 export default async function Home() {
-  const isLogged = await auth();
-
-  const session = await auth();
-  console.log(session);
-  if (session) {
-    try {
-      let result = await axios.post("http://localhost:8080/authuser", {
-        name: session.user?.name,
-        avatar_url: session.user?.image,
-        email: session.user?.email,
-      });
-
-      console.log(result.data);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  const isLogged = true;
 
   if (isLogged)
     return (
