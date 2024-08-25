@@ -16,12 +16,6 @@ export async function middleware(request: NextRequest) {
     "/icon-512x512.png",
   ];
 
-  // Log the current path and full URL
-  console.log("Current Path:", currentPath);
-  console.log("Full URL:", fullUrl);
-  // Log the cookie value
-  console.log("Cookie Value:", authToken);
-
   // Check if the current path or full URL is in the allowedRoutes list
   const isAllowedRoute = allowedRoutes.some(
     (route) => currentPath === route || fullUrl.startsWith(route)

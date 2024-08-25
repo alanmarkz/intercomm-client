@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const isLogged = true;
-  const [data, setData] = useState();
+  const [data, setData] = useState<Chats[] | undefined>();
 
   useEffect(() => {
     const getUserchats = async () => {
@@ -22,11 +22,13 @@ export default function Home() {
     getUserchats();
   }, []);
 
+  console.log(data);
   if (isLogged)
     return (
-      <main className="w-full h-full flex items-center justify-center">
+      <main className="w-full h-full flex flex-col items-center justify-center">
         <div>Your friends</div>
-        <div>{data && JSON.stringify(data)}</div>
+
+        <div>{data && data?.[0]?.friend}</div>
       </main>
     );
   else {
@@ -40,3 +42,10 @@ export default function Home() {
     );
   }
 }
+
+type Chats = {
+  id: string;
+  friend: string;
+  friend_id: string;
+  joinedAt: string;
+};
