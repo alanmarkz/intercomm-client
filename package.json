@@ -15,7 +15,8 @@
     "nookies": "^2.5.2",
     "react": "^18",
     "react-dom": "^18",
-    "react-router-dom": "^6.26.1"
+    "react-router-dom": "^6.26.1",
+    "react-use-websocket": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "^20",
