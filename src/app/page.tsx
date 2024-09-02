@@ -12,7 +12,7 @@ export default function Home() {
 
   useEffect(() => {
     const getUserchats = async () => {
-      const response = await axios.get("http://localhost:8080/get_users", {
+      const response = await axios.get("http://192.168.0.109:8080/get_users", {
         withCredentials: true, // Ensures cookies are sent with the request
       });
 

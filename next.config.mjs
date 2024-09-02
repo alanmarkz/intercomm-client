@@ -9,7 +9,7 @@ const nextConfig = {
           { key: "Access-Control-Allow-Credentials", value: "true" },
           {
             key: "Access-Control-Allow-Origin",
-            value: "http://localhost:8080/authuser",
+            value: "http://192.168.0.109:8080/authuser",
           }, // replace this your actual origin
           {
             key: "Access-Control-Allow-Methods",

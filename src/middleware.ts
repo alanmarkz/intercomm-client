@@ -50,9 +50,12 @@ export const config = {
 
 export async function checkToken(authToken: string) {
   try {
-    const response = await axios.post("http://localhost:8080/validatetoken", {
-      authToken,
-    });
+    const response = await axios.post(
+      "http://192.168.0.109:8080/validatetoken",
+      {
+        authToken,
+      }
+    );
 
     if (response.data) {
       return true;

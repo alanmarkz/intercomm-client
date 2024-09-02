@@ -5,10 +5,10 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 
 const WebSocketComponent = ({ receipient }: { receipient: string }) => {
-  const [history, setHistory] = useState<messageData[] | null>();
+  const [history, setHistory] = useState<messageData[]>([]);
   const [message, setMessage] = useState("");
 
-  const [socketUrl] = useState("ws://localhost:8080/chat_server/34214");
+  const [socketUrl] = useState("ws://192.168.0.109:8080/chat_server/34214");
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
     onOpen: () => console.log("WebSocket connection opened"),
@@ -16,22 +16,26 @@ const WebSocketComponent = ({ receipient }: { receipient: string }) => {
   });
 
   const bottomRef = useRef<HTMLDivElement>(null);
-
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history]);
 
   const getUserchats = async () => {
-    const response = await axios.post(
-      "http://localhost:8080/get_messages",
-      { receipient_id: receipient }, // Send as body data
-      {
-        withCredentials: true, // Ensures cookies are sent with the request
-      }
-    );
+    try {
+      const response = await axios.post(
+        "http://192.168.0.109:8080/get_messages",
+        { receipient_id: receipient }, // Send as body data
+        {
+          withCredentials: true, // Ensures cookies are sent with the request
+        }
+      );
 
-    let data: messageData[] = response.data;
-    setHistory(data);
+      let data: messageData[] = response.data;
+      setHistory(data);
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
   };
 
   useEffect(() => {
@@ -39,8 +43,32 @@ const WebSocketComponent = ({ receipient }: { receipient: string }) => {
   }, [receipient]);
 
   useEffect(() => {
-    console.log(lastMessage?.data);
-  }, [lastMessage]);
+    if (lastMessage !== null) {
+      try {
+        // Parse the incoming message data
+        const incomingMessage = JSON.parse(lastMessage.data);
+
+        console.log(incomingMessage);
+        // Check if the message is from the current recipient or other user
+        const isReceived = incomingMessage.receiver_id === receipient;
+
+        console.log(isReceived);
+        setHistory((prev) => [
+          ...prev,
+          {
+            id: incomingMessage.id || "", // Assuming the message object has an id
+            mymessages: isReceived ? incomingMessage.message : "",
+            theirmessage: isReceived ? "" : incomingMessage.message,
+            createdAt: new Date().toISOString(), // Assuming you want to set the current time
+          },
+        ]);
+      } catch (error) {
+        console.error("Error parsing incoming message:", error);
+      }
+    }
+  }, [lastMessage, receipient]);
+
+  useEffect(() => {});
 
   const handleSendMessage = () => {
     const messageObject = {
@@ -50,16 +78,24 @@ const WebSocketComponent = ({ receipient }: { receipient: string }) => {
 
     sendMessage(JSON.stringify(messageObject));
 
-    setHistory((pre) => [
-      ...pre,
+    // Update history with the sent message
+    setHistory((prev) => [
+      ...prev,
       {
         id: "",
         mymessages: message,
         theirmessage: "",
-        createdAt: "34",
+        createdAt: new Date().toISOString(),
       },
     ]);
     setMessage("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Prevents new line
+      handleSendMessage(); // Invoke the function when Enter is pressed
+    }
   };
 
   const connectionStatus = {
@@ -74,27 +110,25 @@ const WebSocketComponent = ({ receipient }: { receipient: string }) => {
     <div>
       <h1>WebSocket Chat</h1>
       <div>Status: {connectionStatus}</div>
-      <div></div>
       <div className="h-[700px] overflow-y-auto">
         <h2>Messages:</h2>
-        {history?.map((msg, index) => (
-          <ul key={index}>
-            <li className="text-right">{msg.mymessages}</li>
-            <li>{msg.theirmessage}</li>
-          </ul>
-        ))}
+        <div className="flex flex-col gap-2 w-[400px]">
+          {history.map((msg, index) => (
+            <ul key={index} className=" w-[400px]">
+              <li className="text-right bg-green-400">{msg.mymessages}</li>
+              <li className="bg-slate-500 text-left">{msg.theirmessage}</li>
+            </ul>
+          ))}
+        </div>
         <div ref={bottomRef} />
       </div>
       <div>
         <textarea
           value={message}
+          onKeyDown={(e) => handleKeyDown(e)}
           onChange={(e) => setMessage(e.target.value)}
         />
-        <button
-          disabled={message === null || message === ""}
-          onClick={() => {
-            handleSendMessage();
-          }}>
+        <button disabled={message === ""} onClick={handleSendMessage}>
           Send
         </button>
       </div>
@@ -105,8 +139,8 @@ const WebSocketComponent = ({ receipient }: { receipient: string }) => {
 export default WebSocketComponent;
 
 type messageData = {
-  id: String;
-  mymessages: String;
-  theirmessage: String;
-  createdAt: String;
+  id: string;
+  mymessages: string;
+  theirmessage: string;
+  createdAt: string;
 };
